@@ -7,25 +7,63 @@ using UnityEngine.UI;
 
 public class Quiz : MonoBehaviour
 {
+    [Header("Questions")]
     [SerializeField] TextMeshProUGUI questionText;
-    [SerializeField] QuestionSO question;
+    [SerializeField] List<QuestionSO> questions = new List<QuestionSO>();
+    QuestionSO currentQuestion;
+
+    [Header("Answers")]
     [SerializeField] GameObject[] answerButtons;
+    bool hasAnsweredEarly;
 
     void Start()
     {
-        questionText.text = question.GetQuestion();
-    
+        GetRandomQuestion();
+        DisplayQuestion();
+    }
 
-        for (int i = 0; i<answerButtons.Length; i++)
+    void Update()
+    {
+        if (hasAnsweredEarly)
         {
-            TextMeshProUGUI buttonText = answerButtons[i].GetComponentInChildren<TextMeshProUGUI>();
-            buttonText.text = question.GetAnswer(i);
+            GetNextQuestion();
+            hasAnsweredEarly = false;
         }
     }
 
- /*   public void OnAnswerSelected(int index)
+    public void OnAnswerSelected()
     {
-        return index;
-        Debug.Log(index);
-    }*/
+        hasAnsweredEarly = true;
+    }
+
+    void GetNextQuestion()
+    {
+        if (questions.Count > 0)
+        {
+            GetRandomQuestion();
+            DisplayQuestion();
+        }
+    }
+
+    void GetRandomQuestion()
+    {
+        int index = Random.Range(0, questions.Count);
+        currentQuestion = questions[index];
+
+        if (questions.Contains(currentQuestion))
+        {
+            questions.Remove(currentQuestion);
+        }
+    }
+
+    void DisplayQuestion()
+    {
+        questionText.text = currentQuestion.GetQuestion();
+
+        for (int i = 0; i < answerButtons.Length; i++)
+        {
+            TextMeshProUGUI buttonText = answerButtons[i].GetComponentInChildren<TextMeshProUGUI>();
+            buttonText.text = currentQuestion.GetAnswer(i);
+        }
+    }
 }
