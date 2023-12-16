@@ -7,25 +7,79 @@ using UnityEngine.UI;
 
 public class Quiz : MonoBehaviour
 {
+    [Header("Questions")]
     [SerializeField] TextMeshProUGUI questionText;
-    [SerializeField] QuestionSO question;
+    [SerializeField] List<QuestionSO> questions = new List<QuestionSO>();
+    QuestionSO currentQuestion;
+
+    [Header("Answers")]
     [SerializeField] GameObject[] answerButtons;
+    int correctAnswerIndex;
+    bool hasAnsweredEarly;
+
+    [Header("Animator")]
+    [SerializeField] AudioClip audioClip;
+    [SerializeField] AudioSource audioSource;
+    [SerializeField] Animator strangeGuy;
 
     void Start()
     {
-        questionText.text = question.GetQuestion();
-    
+        GetNextQuestion();
+    }
 
-        for (int i = 0; i<answerButtons.Length; i++)
+    void Update()
+    {
+        if (hasAnsweredEarly)
         {
-            TextMeshProUGUI buttonText = answerButtons[i].GetComponentInChildren<TextMeshProUGUI>();
-            buttonText.text = question.GetAnswer(i);
+            strangeGuy.SetBool("isAnswered", true);
+            StartCoroutine(ResetAnimation());
+
         }
     }
 
- /*   public void OnAnswerSelected(int index)
+    IEnumerator ResetAnimation()
     {
-        return index;
-        Debug.Log(index);
-    }*/
+        audioSource.PlayOneShot(audioClip);
+        hasAnsweredEarly = false;
+        yield return new WaitForSeconds(5);
+
+        strangeGuy.SetBool("isAnswered", false);
+        GetNextQuestion();
+    }
+
+    public void OnAnswerSelected()
+    {
+        hasAnsweredEarly = true;
+    }
+
+    void GetNextQuestion()
+    {
+        if (questions.Count > 0)
+        {
+            GetRandomQuestion();
+            DisplayQuestion();
+        }
+    }
+
+    void GetRandomQuestion()
+    {
+        int index = Random.Range(0, questions.Count);
+        currentQuestion = questions[index];
+
+        if (questions.Contains(currentQuestion))
+        {
+            questions.Remove(currentQuestion);
+        }
+    }
+
+    void DisplayQuestion()
+    {
+        questionText.text = currentQuestion.GetQuestion();
+
+        for (int i = 0; i < answerButtons.Length; i++)
+        {
+            TextMeshProUGUI buttonText = answerButtons[i].GetComponentInChildren<TextMeshProUGUI>();
+            buttonText.text = currentQuestion.GetAnswer(i);
+        }
+    }
 }
